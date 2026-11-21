@@ -51,6 +51,28 @@ class Box
     }
 }
 
+class Cylinder
+{
+    name = "Cylinder";
+    // These fields deliberately match Box's GPU layout so cylinders can share
+    // the existing storage buffer without consuming another storage binding.
+    center = [0.0, 0.0, 0.0, 0.0];
+    radius = [0.0, 0.0, 0.0, 0.0];
+    rotation = [0.0, 0.0, 0.0, 0.0];
+    color = [0.0, 0.0, 0.0, 0.0];
+    material = [0.0, 0.0, 0.0, 0.0];
+
+    constructor(center, color, radius, height, rotation, material)
+    {
+        this.center = [center[0], center[1], center[2], 0.0];
+        // The shader stores radius in X and half-height in Y.
+        this.radius = [radius, height / 2.0, 0.0, 0.0];
+        this.rotation = [rotation[0], rotation[1], rotation[2], 0.0];
+        this.color = [color[0], color[1], color[2], 1.0];
+        this.material = material;
+    }
+}
+
 class Triangle
 {
     name = "Triangle";
@@ -99,4 +121,4 @@ class Mesh
     }
 }
 
-export { Sphere, Quad, Box, Triangle, Mesh };
+export { Sphere, Quad, Box, Cylinder, Triangle, Mesh };

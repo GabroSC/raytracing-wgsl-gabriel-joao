@@ -157,6 +157,77 @@ fn hit_box(r: ray, center: vec3f, rad: vec3f, record: ptr<function, hit_record>,
   return;
 }
 
+// Closed finite cylinder aligned with local Y. The caller transforms its ray
+// into cylinder space and rotates the resulting normal back to world space.
+fn hit_cylinder(r: ray, radius: f32, half_height: f32, record: ptr<function, hit_record>, t_max: f32)
+{
+  record.hit_anything = false;
+  if (radius <= 0.000001 || half_height <= 0.000001)
+  {
+    return;
+  }
+
+  var nearest_t = t_max;
+  var nearest_normal = vec3f(0.0);
+  var did_hit = false;
+
+  let a = r.direction.x * r.direction.x + r.direction.z * r.direction.z;
+  if (a > 0.00000001)
+  {
+    let b = 2.0 * (r.origin.x * r.direction.x + r.origin.z * r.direction.z);
+    let c = r.origin.x * r.origin.x + r.origin.z * r.origin.z - radius * radius;
+    let discriminant = b * b - 4.0 * a * c;
+
+    if (discriminant >= 0.0)
+    {
+      let root_delta = sqrt(discriminant);
+      let root0 = (-b - root_delta) / (2.0 * a);
+      let root1 = (-b + root_delta) / (2.0 * a);
+
+      let point0 = r.origin + root0 * r.direction;
+      if (root0 > RAY_TMIN && root0 < nearest_t && abs(point0.y) <= half_height)
+      {
+        nearest_t = root0;
+        nearest_normal = normalize(vec3f(point0.x, 0.0, point0.z));
+        did_hit = true;
+      }
+
+      let point1 = r.origin + root1 * r.direction;
+      if (root1 > RAY_TMIN && root1 < nearest_t && abs(point1.y) <= half_height)
+      {
+        nearest_t = root1;
+        nearest_normal = normalize(vec3f(point1.x, 0.0, point1.z));
+        did_hit = true;
+      }
+    }
+  }
+
+  if (abs(r.direction.y) > 0.00000001)
+  {
+    for (var cap_index = 0; cap_index < 2; cap_index = cap_index + 1)
+    {
+      let cap_sign = select(-1.0, 1.0, cap_index == 1);
+      let cap_y = cap_sign * half_height;
+      let t = (cap_y - r.origin.y) / r.direction.y;
+      let point = r.origin + t * r.direction;
+      if (t > RAY_TMIN && t < nearest_t && point.x * point.x + point.z * point.z <= radius * radius)
+      {
+        nearest_t = t;
+        nearest_normal = vec3f(0.0, cap_sign, 0.0);
+        did_hit = true;
+      }
+    }
+  }
+
+  if (did_hit)
+  {
+    record.t = nearest_t;
+    record.p = ray_at(r, nearest_t);
+    record.normal = nearest_normal;
+    record.hit_anything = true;
+  }
+}
+
 fn hit_mesh(r: ray, object: mesh, triangle_count: i32, record: ptr<function, hit_record>, t_max: f32)
 {
   record.hit_anything = false;

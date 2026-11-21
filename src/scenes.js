@@ -1,4 +1,4 @@
-import { Sphere, Quad, Box, Mesh } from './objects.js';
+import { Sphere, Quad, Box, Cylinder, Mesh } from './objects.js';
 import { loadMesh, getObjBoundingBox, getSpheresRandom } from './util.js';
 
 const groundDefault = new Sphere([0, -1001, 0], [0.7, 0.7, 0.7], 1000, [0.9, 0.0, 0.6, 0.0]);
@@ -477,6 +477,34 @@ async function GlassGarden()
     };
 }
 
+async function Cylinders()
+{
+    let spheres = [
+        new Sphere([0, -1001, 0], [0.22, 0.25, 0.38], 1000, [0.9, 0.0, 0.5, 0.0]),
+    ];
+    let cylinders = [
+        new Cylinder([-0.85, -0.05, -2.8], [0.12, 0.72, 0.98], 0.42, 1.65, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]),
+        new Cylinder([0.15, -0.05, -3.4], [0.98, 0.43, 0.12], 0.43, 1.8, [0.25, 0.2, 0.3], [1.0, 0.02, 0.9, 0.0]),
+        new Cylinder([1.15, -0.28, -2.8], [0.58, 0.26, 0.88], 0.3, 1.15, [0.15, 0.45, 0.05], [-1.0, 0.0, 1.5, 0.0]),
+    ];
+
+    return {
+        spheres,
+        quads: [],
+        boxes: [],
+        cylinders,
+        triangles: [],
+        meshes: [],
+        backgroundColor1: [0.015, 0.04, 0.13],
+        backgroundColor2: [0.42, 0.62, 0.9],
+        focusDistance: 5.0,
+        focusAngle: 0.0,
+        sunIntensity: 0.8,
+        samplesPerPixel: 2,
+        maxBounces: 10,
+    };
+}
+
 async function Rotation() 
 {
 	let spheres = [
@@ -495,6 +523,10 @@ async function Rotation()
 		new Box([1.13, -0.71, -1.17, 0], [1, 1, 1], [1.13, -0.73, 0, 0], [0.81, 0.01, 0.94, 0], [1, 0.01, 0.8, 0]), 
 	];
 
+    let cylinders = [
+        new Cylinder([0.72, -0.1, -2.95], [0.95, 0.52, 0.16], 0.24, 1.15, [0.0, 0.0, 0.52], [1.0, 0.02, 0.85, 0.0]),
+    ];
+
 	let { verticesMesh, trianglesMesh, triangles } = await loadMesh('./media/stanford-bunny.obj');
     let meshes = [new Mesh([-0.69, -1, -1.77], [.4, .4, .4], [0, -.75, 0], [0.4, 0.7, 0.6, 1.0], [1.0, 0.0, 0.5, 0.0], 0, 0, triangles.length)];
     let { min, max } = getObjBoundingBox(verticesMesh);
@@ -504,6 +536,7 @@ async function Rotation()
 		spheres : spheres,
 		quads : quads,
 		boxes : boxes,
+		cylinders: cylinders,
 		triangles: triangles,
 		meshes: meshes,
 		backgroundColor1 : [1, 1, 1],
@@ -528,6 +561,10 @@ async function Everything()
                 new Box([0.0, 1.0, -2.6], [0.3, 0.3, 0.3], [-0.6, -0.2, -0.1], [0.3, 0.3, 0.3], [1.0, 0.0, 0.9, 0.0]),
     ];
 
+    let cylinders = [
+        new Cylinder([1.75, 0.15, -3.8], [0.12, 0.72, 0.96], 0.22, 1.1, [0.25, 0.4, 0.2], [1.0, 0.02, 0.8, 0.0]),
+    ];
+
     let { verticesMesh, trianglesMesh, triangles } = await loadMesh('./media/suzanne.obj');
     let meshes = [new Mesh([0, -0.6, -2], [.25, .25, .25], [0.5, 0.3, 0.2], [0.6, 0.3, 0.7, 1.0], [1.0, 0.0, 0.7, 0.0], 0, 0, triangles.length)];
     let { min, max } = getObjBoundingBox(verticesMesh);
@@ -537,6 +574,7 @@ async function Everything()
         spheres: spheres, 
         quads: [], 
         boxes: boxes, 
+        cylinders,
         triangles: triangles, 
         meshes: meshes,
         backgroundColor1: [0.0, 0.5, 1.0], 

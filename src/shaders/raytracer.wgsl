@@ -158,6 +158,7 @@ fn check_ray_collision(r: ray, max: f32) -> hit_record
   var boxesCount = i32(uniforms[21]);
   var trianglesCount = i32(uniforms[22]);
   var meshCount = i32(uniforms[27]);
+  var cylinderCount = i32(uniforms[28]);
 
   var record = hit_record(RAY_TMAX, vec3f(0.0), vec3f(0.0), vec4f(0.0), vec4f(0.0), false, false);
   var closest = record;
@@ -212,6 +213,31 @@ fn check_ray_collision(r: ray, max: f32) -> hit_record
       record.normal = select(-outward_normal, outward_normal, record.frontface);
       record.object_color = box_object.color;
       record.object_material = box_object.material;
+      closest = record;
+    }
+  }
+
+  // Cylinders are packed after boxes in boxesb, sharing its storage binding.
+  for (var i = 0; i < cylinderCount; i = i + 1)
+  {
+    record = hit_record(RAY_TMAX, vec3f(0.0), vec3f(0.0), vec4f(0.0), vec4f(0.0), false, false);
+    let cylinder_object = boxesb[boxesCount + i];
+    let cylinder_rotation = quaternion_from_euler(cylinder_object.rotation.xyz);
+    let inverse_cylinder_rotation = q_inverse(cylinder_rotation);
+    let local_ray = ray(
+      rotate_vector(r.origin - cylinder_object.center.xyz, inverse_cylinder_rotation),
+      rotate_vector(r.direction, inverse_cylinder_rotation)
+    );
+    hit_cylinder(local_ray, cylinder_object.radius.x, cylinder_object.radius.y, &record, min(max, closest.t));
+
+    if (record.hit_anything && record.t < closest.t)
+    {
+      let outward_normal = normalize(rotate_vector(record.normal, cylinder_rotation));
+      record.p = ray_at(r, record.t);
+      record.frontface = dot(r.direction, outward_normal) < 0.0;
+      record.normal = select(-outward_normal, outward_normal, record.frontface);
+      record.object_color = cylinder_object.color;
+      record.object_material = cylinder_object.material;
       closest = record;
     }
   }
